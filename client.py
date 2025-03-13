@@ -1,9 +1,10 @@
 """
-Клиент, который будет подключаться к серверу, отправлять и получать от него аудио-потоки
+The Client object will connect to the server and exchange data with it
 """
 import socket
 
-from pyaudio import PyAudio, paInt16
+import pyaudio
+from pyaudio import PyAudio, paInt16, Stream
 
 from src.utils.logger import logger
 
@@ -30,21 +31,41 @@ class Client:
 
         self.audio = PyAudio()
 
-        # Создание аудио-потоков для ввода и вывода звука
-        self.stream_input = self.audio.open(
+        # Инициализация аудио-потоков
+        self.stream_input = self.get_input_stream()
+        self.stream_output = self.get_output_stream()
+
+
+    def get_input_stream(self) -> Stream:
+        return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
             rate=SAMPLING_RATE,
             input=True,
             frames_per_buffer=FRAMES_PER_BUFFER,
         )
-        self.stream_output = self.audio.open(
+
+    def get_output_stream(self) -> Stream:
+        return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
             rate=SAMPLING_RATE,
             output=True,
             frames_per_buffer=FRAMES_PER_BUFFER,
         )
+
+    def _connect_to_server(self, ip: str = "127.0.0.1", port: int = 9999) -> None:
+        """
+        Connect to the Server on specified IP address and port
+        """
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.TCP_NODELAY, 1)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+
+        self.socket.connect((ip, port))
+        logger.info(f"Successfully connected to '{ip}:{port}'")
 
         self._start_loop()
 
@@ -58,19 +79,6 @@ class Client:
 
             if data:
                 self._handle_stream_from_server(data)
-
-    def _connect_to_server(self, ip: str = "127.0.0.1", port: int = 9999) -> None:
-        """
-        Подключение к серверу по указанному адресу и порту
-        """
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.TCP_NODELAY, 1)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
-
-        self.socket.connect((ip, port))
-        logger.info(f"Successfully connected to '{ip}:{port}'")
 
     def _send_input_stream_to_server(self) -> None:
         """
