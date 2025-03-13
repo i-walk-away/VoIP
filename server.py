@@ -29,7 +29,7 @@ class Server:
         logger.info(f"Server is running and ready to accept data at {self.ip}:{self.port}")
 
         while True:
-            client, address = self.socket.accept()
+            client, _ = self.socket.accept()
 
             self.clients.append(client)
 
@@ -61,7 +61,7 @@ class Server:
         client.close()
 
 
-def main() -> None:
+def main() -> None:  # pylint: disable=missing-function-docstring
     server = Server(IP, PORT)
     server.start_server()
 
