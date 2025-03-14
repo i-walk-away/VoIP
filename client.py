@@ -1,9 +1,8 @@
 """
-The Client object will connect to the server and exchange data with it
+The Client object connects to the Server and exchanges data with it
 """
 import socket
 
-import pyaudio
 from pyaudio import PyAudio, paInt16, Stream
 
 from src.utils.logger import logger
@@ -31,12 +30,15 @@ class Client:
 
         self.audio = PyAudio()
 
-        # Инициализация аудио-потоков
+        # Input and output audio stream initialisation
         self.stream_input = self.get_input_stream()
         self.stream_output = self.get_output_stream()
 
 
     def get_input_stream(self) -> Stream:
+        """
+        Returns the input Stream
+        """
         return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
@@ -46,6 +48,9 @@ class Client:
         )
 
     def get_output_stream(self) -> Stream:
+        """
+        Returns the output Stream
+        """
         return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
@@ -56,7 +61,7 @@ class Client:
 
     def _connect_to_server(self, ip: str = "127.0.0.1", port: int = 9999) -> None:
         """
-        Connect to the Server on specified IP address and port
+        Connects to the Server on specified IP address and port
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -71,7 +76,8 @@ class Client:
 
     def _start_loop(self) -> None:
         """
-        Иницализация цикла, в котором клиент получает данные от сервера
+        Main loop in which the Client sends input stream data to the Server
+        and handles output stream data from it.
         """
         while True:
             self._send_input_stream_to_server()
@@ -82,7 +88,7 @@ class Client:
 
     def _send_input_stream_to_server(self) -> None:
         """
-        Отправка потока для ввода аудио на сервер в формате bytes
+        Sends an audio input stream to the Server in bytes format
         """
         input_data = self._get_microphone_stream()
 
@@ -90,13 +96,13 @@ class Client:
 
     def _get_microphone_stream(self) -> bytes:
         """
-        Получение аудио-потока с системного микрофона
+        Gets data from the audio input stream
         """
         return self.stream_input.read(FRAMES_PER_BUFFER, exception_on_overflow=False)
 
     def _handle_stream_from_server(self, stream: bytes) -> None:
         """
-        Обработка аудио-потока, полученного с сервера
+        Handles the output stream data from the Server
         """
         self.stream_output.write(stream)
 
