@@ -23,17 +23,16 @@ class Client:
     Client class
     """
     def __init__(self):
-        try:
-            self._connect_to_server(IP, PORT)
-        except Exception as e:
-            logger.error(f"Failed to connect to server '{IP}:{PORT}': {e}")
-
         self.audio = PyAudio()
 
         # Input and output audio stream initialisation
         self.stream_input = self.get_input_stream()
         self.stream_output = self.get_output_stream()
 
+        try:
+            self._connect_to_server(IP, PORT)
+        except Exception as e:
+            logger.error(f"Failed to connect to server '{IP}:{PORT}': {e}")
 
     def get_input_stream(self) -> Stream:
         """
@@ -91,7 +90,6 @@ class Client:
         Sends an audio input stream to the Server in bytes format
         """
         input_data = self._get_microphone_stream()
-
         self.socket.send(input_data)
 
     def _get_microphone_stream(self) -> bytes:

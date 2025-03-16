@@ -1,7 +1,5 @@
 """
-The Server is responsible for receiving and sending data to Clients.
-Currently it's only capable of handling audio streams.
-Other types of data are to be implemented in the future (messages, images, Plague Inc files)
+The Server is responsible for receiving and sending data to Clients
 """
 import socket
 import threading
@@ -58,9 +56,11 @@ class Server:
                 )
                 break
 
-            for receiver in self.clients:                       # This makes sure that the sender of
-                if receiver is not client:                      # an audio stream does not receive
-                    receiver.send(stream)                       # his own voice back from the Server
+            # This makes sure that the sender of an audio stream
+            # does not receive his own voice back from the server
+            for receiver in self.clients:
+                if receiver is not client:
+                    receiver.send(stream)
 
         self.clients.remove(client)
         client.close()
