@@ -33,6 +33,8 @@ class Client:
             self._connect_to_server(IP, PORT)
         except Exception as e:
             logger.error(f"Failed to connect to server '{IP}:{PORT}': {e}")
+        else:
+            self._start_loop()
 
     def get_input_stream(self) -> Stream:
         """
@@ -70,8 +72,6 @@ class Client:
 
         self.socket.connect((ip, port))
         logger.info(f"Successfully connected to '{ip}:{port}'")
-
-        self._start_loop()
 
     def _start_loop(self) -> None:
         """
