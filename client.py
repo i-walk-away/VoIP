@@ -1,9 +1,9 @@
 """
-Клиент, который будет подключаться к серверу, отправлять и получать от него аудио-потоки
+The Client object connects to the Server and exchanges data with it
 """
 import socket
 
-from pyaudio import PyAudio, paInt16
+from pyaudio import PyAudio, paInt16, Stream
 
 from src.utils.logger import logger
 
@@ -23,22 +23,36 @@ class Client:
     Client class
     """
     def __init__(self):
+        self.audio = PyAudio()
+
+        # Input and output audio stream initialisation
+        self.stream_input = self.get_input_stream()
+        self.stream_output = self.get_output_stream()
+
         try:
             self._connect_to_server(IP, PORT)
         except Exception as e:
             logger.error(f"Failed to connect to server '{IP}:{PORT}': {e}")
+        else:
+            self._start_loop()
 
-        self.audio = PyAudio()
-
-        # Создание аудио-потоков для ввода и вывода звука
-        self.stream_input = self.audio.open(
+    def get_input_stream(self) -> Stream:
+        """
+        Returns the input Stream
+        """
+        return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
             rate=SAMPLING_RATE,
             input=True,
             frames_per_buffer=FRAMES_PER_BUFFER,
         )
-        self.stream_output = self.audio.open(
+
+    def get_output_stream(self) -> Stream:
+        """
+        Returns the output Stream
+        """
+        return self.audio.open(
             format=FORMAT,
             channels=CHANNELS,
             rate=SAMPLING_RATE,
@@ -46,22 +60,9 @@ class Client:
             frames_per_buffer=FRAMES_PER_BUFFER,
         )
 
-        self._start_loop()
-
-    def _start_loop(self) -> None:
-        """
-        Иницализация цикла, в котором клиент получает данные от сервера
-        """
-        while True:
-            self._send_input_stream_to_server()
-            data = self.socket.recv(1024)
-
-            if data:
-                self._handle_stream_from_server(data)
-
     def _connect_to_server(self, ip: str = "127.0.0.1", port: int = 9999) -> None:
         """
-        Подключение к серверу по указанному адресу и порту
+        Connects to the Server on specified IP address and port
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -72,23 +73,34 @@ class Client:
         self.socket.connect((ip, port))
         logger.info(f"Successfully connected to '{ip}:{port}'")
 
+    def _start_loop(self) -> None:
+        """
+        Main loop in which the Client sends input stream data to the Server
+        and handles output stream data from it.
+        """
+        while True:
+            self._send_input_stream_to_server()
+            data = self.socket.recv(1024)
+
+            if data:
+                self._handle_stream_from_server(data)
+
     def _send_input_stream_to_server(self) -> None:
         """
-        Отправка потока для ввода аудио на сервер в формате bytes
+        Sends an audio input stream to the Server in bytes format
         """
         input_data = self._get_microphone_stream()
-
         self.socket.send(input_data)
 
     def _get_microphone_stream(self) -> bytes:
         """
-        Получение аудио-потока с системного микрофона
+        Gets data from the audio input stream
         """
         return self.stream_input.read(FRAMES_PER_BUFFER, exception_on_overflow=False)
 
     def _handle_stream_from_server(self, stream: bytes) -> None:
         """
-        Обработка аудио-потока, полученного с сервера
+        Handles the output stream data from the Server
         """
         self.stream_output.write(stream)
 

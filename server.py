@@ -1,5 +1,5 @@
 """
-Сервер, отвечающий за получение и отправку аудио-потоков клиентам
+The Server is responsible for receiving and sending data to Clients
 """
 import socket
 import threading
@@ -12,6 +12,9 @@ PORT = int(input("PORT: "))
 
 
 class Server:
+    """
+    Server class
+    """
     clients: list[socket.socket] = []
 
     def __init__(self, ip: str, port: int):
@@ -24,7 +27,7 @@ class Server:
 
     def start_server(self) -> None:
         """
-        Запуск сервера для обработки запросов с клиента
+        Initializes the Server on specified IP address and port
         """
         logger.info(f"Server is running and ready to accept data at {self.ip}:{self.port}")
 
@@ -41,8 +44,8 @@ class Server:
 
     def _handle_client(self, client: socket.socket) -> None:
         """
-        Обработка клиента в отдельном потоке. Отвечает за получение его аудио-потока
-        и отправку аудио других клиентов
+        Handles data from Clients in a separate thread. Recieves input audio streams from Clients
+        and sends them to other Clients
         """
         while True:
             try:
@@ -53,6 +56,8 @@ class Server:
                 )
                 break
 
+            # This makes sure that the sender of an audio stream
+            # does not receive his own voice back from the server
             for receiver in self.clients:
                 if receiver is not client:
                     receiver.send(stream)
