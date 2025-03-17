@@ -6,6 +6,7 @@ import socket
 from pyaudio import PyAudio, paInt16, Stream
 
 from src.utils.logger import logger
+from src.services.config_service import ConfigService
 
 
 # FIXME: Temp
@@ -24,7 +25,7 @@ class Client:
     """
     def __init__(self):
         self.audio = PyAudio()
-
+        self.cfg = ConfigService('config/client_config.json')
         # Input and output audio stream initialisation
         self.stream_input = self.get_input_stream()
         self.stream_output = self.get_output_stream()
