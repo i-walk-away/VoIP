@@ -37,7 +37,7 @@ class Server:
         """
         while True:
             try:
-                stream, address = self.socket.recvfrom(1024)
+                stream, address = self.socket.recvfrom(512)
             except Exception as e:
                 logger.error(
                     f"Error occured while receiving stream from client: {e}"

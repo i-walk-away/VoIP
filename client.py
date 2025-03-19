@@ -12,7 +12,7 @@ from src.services.config_service import ConfigService
 # FIXME: Temp
 FORMAT: int = paInt16
 CHANNELS: int = 1
-SAMPLING_RATE: int = 8000
+SAMPLING_RATE: int = 14410
 FRAMES_PER_BUFFER: int = 256
 
 
@@ -85,7 +85,7 @@ class Client:
         """
         while True:
             self._send_input_stream_to_server()
-            data, _ = self.socket.recvfrom(1024)
+            data, _ = self.socket.recvfrom(FRAMES_PER_BUFFER*2)
 
             if data:
                 self._handle_stream_from_server(data)
