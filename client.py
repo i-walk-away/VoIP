@@ -12,11 +12,8 @@ from src.services.config_service import ConfigService
 # FIXME: Temp
 FORMAT: int = paInt16
 CHANNELS: int = 1
-SAMPLING_RATE: int = 4000
+SAMPLING_RATE: int = 8000
 FRAMES_PER_BUFFER: int = 256
-
-IP = input("IP ADDRESS: ")
-PORT = int(input("PORT: "))
 
 
 class Client:
@@ -29,6 +26,11 @@ class Client:
         # Input and output audio stream initialisation
         self.stream_input = self.get_input_stream()
         self.stream_output = self.get_output_stream()
+
+        IP = self.cfg.get_value('IP')
+        print(IP)
+        PORT = self.cfg.get_value('PORT')
+        print(PORT)
 
         try:
             self._connect_to_server(IP, PORT)
@@ -61,17 +63,19 @@ class Client:
             frames_per_buffer=FRAMES_PER_BUFFER,
         )
 
-    def _connect_to_server(self, ip: str = "127.0.0.1", port: int = 9999) -> None:
+    def _connect_to_server(self, ip: str, port: int) -> None:
         """
-        Connects to the Server on specified IP address and port
+        Connects to the Server on specified IP address and port.
         """
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.TCP_NODELAY, 1)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+        # Commented below is TCP stuff. No longer needed.
+        # self.socket.setsockopt(socket.IPPROTO_IP, socket.TCP_NODELAY, 1)
+        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+        # self.socket.connect((ip, port))
 
-        self.socket.connect((ip, port))
+        self.server_address = (ip, port)
         logger.info(f"Successfully connected to '{ip}:{port}'")
 
     def _start_loop(self) -> None:
@@ -81,7 +85,7 @@ class Client:
         """
         while True:
             self._send_input_stream_to_server()
-            data = self.socket.recv(1024)
+            data, _ = self.socket.recvfrom(1024)
 
             if data:
                 self._handle_stream_from_server(data)
@@ -91,7 +95,7 @@ class Client:
         Sends an audio input stream to the Server in bytes format
         """
         input_data = self._get_microphone_stream()
-        self.socket.send(input_data)
+        self.socket.sendto(input_data, self.server_address)
 
     def _get_microphone_stream(self) -> bytes:
         """
