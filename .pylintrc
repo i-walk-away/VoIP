@@ -657,6 +657,7 @@ disable=
     E0611, # no-name-in-module
     W0511, # fixme
     W0718, # broad-exception-caught
+    R0902, # too-many-instance-attributes
 
 
 ignore=migrations,

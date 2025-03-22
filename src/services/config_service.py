@@ -26,6 +26,7 @@ class ConfigService:
                 return json.load(cfg)
         except Exception as e:
             logger.error(f'Failed to open a config file: {e}')
+            return None
 
     def _save_config(self):
         """

@@ -13,15 +13,16 @@ class Client:
     """
     Client class
     """
+    FORMAT: int = paInt16
+    CHANNELS: int = 1
+    SAMPLING_RATE: int = 14410
+    FRAMES_PER_BUFFER: int = 256
+
     def __init__(self):
         self.config = ConfigService('config/client_config.json')
 
-        # Audio interface, parameters, input and output stream initialization
+        # Audio interface, input and output stream initialization
         self.audio = PyAudio()
-        self.FORMAT: int = paInt16
-        self.CHANNELS: int = 1
-        self.SAMPLING_RATE: int = 14410
-        self.FRAMES_PER_BUFFER: int = 256
         self.stream_input: Stream = self.get_input_stream()
         self.stream_output: Stream = self.get_output_stream()
 
