@@ -6,7 +6,7 @@ from src.utils.logger import logger
 
 class ConfigService:
     """
-    ConfigService provides a convinient way to read and edit
+    Provides a convinient way to read and edit
     configuration JSON files for Server and Client objects.
     """
     def __init__(self, path_to_config_file: str):
@@ -19,7 +19,7 @@ class ConfigService:
 
     def _load_config(self) -> dict | None:
         """
-        Loads govno
+        Loads config file
         """
         try:
             with open(self.config_path, 'r', encoding="UTF-8") as cfg:
@@ -34,7 +34,7 @@ class ConfigService:
         with open(self.config_path, 'w', encoding='UTF-8') as cfg:
             json.dump(self.config_data, cfg, indent=4)
 
-    def set_value(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: Any) -> None:
         """
         This method is used to change values in key:value pairs of config.JSON
         :param key: Specify key to change its value
@@ -46,7 +46,7 @@ class ConfigService:
         except Exception as e:
             logger.error(f'Failed to save changes to a config file: {e}')
 
-    def get_value(self, key: str) -> Any:
+    def get(self, key: str) -> Any:
         """
         Returns value of specified key. If an error occurs,
         returns logger.error instead.
@@ -54,5 +54,6 @@ class ConfigService:
         """
         if key in self.config_data:
             return self.config_data[key]
-        else:
-            return logger.error(f'Failed to get value of {key}: could not find {key} in cfg')
+
+        logger.error(f'Failed to get value of {key}: could not find {key} in cfg')
+        return None

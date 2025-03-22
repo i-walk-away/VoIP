@@ -9,33 +9,31 @@ from src.utils.logger import logger
 from src.services.config_service import ConfigService
 
 
-# FIXME: Temp
-FORMAT: int = paInt16
-CHANNELS: int = 1
-SAMPLING_RATE: int = 14410
-FRAMES_PER_BUFFER: int = 256
-
-
 class Client:
     """
     Client class
     """
     def __init__(self):
-        self.audio = PyAudio()
-        self.cfg = ConfigService('config/client_config.json')
-        # Input and output audio stream initialisation
-        self.stream_input = self.get_input_stream()
-        self.stream_output = self.get_output_stream()
+        self.config = ConfigService('config/client_config.json')
 
-        IP = self.cfg.get_value('IP')
-        print(IP)
-        PORT = self.cfg.get_value('PORT')
-        print(PORT)
+        # Audio interface, parameters, input and output stream initialization
+        self.audio = PyAudio()
+        self.FORMAT: int = paInt16
+        self.CHANNELS: int = 1
+        self.SAMPLING_RATE: int = 14410
+        self.FRAMES_PER_BUFFER: int = 256
+        self.stream_input: Stream = self.get_input_stream()
+        self.stream_output: Stream = self.get_output_stream()
+
+        # Connection
+        self.ip: str = self.config.get('IP')
+        self.port: int = self.config.get('PORT')
+        self.server_address: tuple[str, int] = (self.ip, self.port)
 
         try:
-            self._connect_to_server(IP, PORT)
+            self._connect_to_server()
         except Exception as e:
-            logger.error(f"Failed to connect to server '{IP}:{PORT}': {e}")
+            logger.error(f"Failed to connect to server '{self.ip}:{self.port}': {e}")
         else:
             self._start_loop()
 
@@ -44,11 +42,11 @@ class Client:
         Returns the input Stream
         """
         return self.audio.open(
-            format=FORMAT,
-            channels=CHANNELS,
-            rate=SAMPLING_RATE,
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.SAMPLING_RATE,
             input=True,
-            frames_per_buffer=FRAMES_PER_BUFFER,
+            frames_per_buffer=self.FRAMES_PER_BUFFER,
         )
 
     def get_output_stream(self) -> Stream:
@@ -56,27 +54,19 @@ class Client:
         Returns the output Stream
         """
         return self.audio.open(
-            format=FORMAT,
-            channels=CHANNELS,
-            rate=SAMPLING_RATE,
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.SAMPLING_RATE,
             output=True,
-            frames_per_buffer=FRAMES_PER_BUFFER,
+            frames_per_buffer=self.FRAMES_PER_BUFFER,
         )
 
-    def _connect_to_server(self, ip: str, port: int) -> None:
+    def _connect_to_server(self) -> None:
         """
         Connects to the Server on specified IP address and port.
         """
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        # Commented below is TCP stuff. No longer needed.
-        # self.socket.setsockopt(socket.IPPROTO_IP, socket.TCP_NODELAY, 1)
-        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        # self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
-        # self.socket.connect((ip, port))
-
-        self.server_address = (ip, port)
-        logger.info(f"Successfully connected to '{ip}:{port}'")
+        logger.info(f"Successfully connected to '{self.ip}:{self.port}'")
 
     def _start_loop(self) -> None:
         """
@@ -85,7 +75,7 @@ class Client:
         """
         while True:
             self._send_input_stream_to_server()
-            data, _ = self.socket.recvfrom(FRAMES_PER_BUFFER*2)
+            data, _ = self.socket.recvfrom(512)
 
             if data:
                 self._handle_stream_from_server(data)
@@ -101,11 +91,12 @@ class Client:
         """
         Gets data from the audio input stream
         """
-        return self.stream_input.read(FRAMES_PER_BUFFER, exception_on_overflow=False)
+        return self.stream_input.read(self.FRAMES_PER_BUFFER, exception_on_overflow=False)
 
     def _handle_stream_from_server(self, stream: bytes) -> None:
         """
         Handles the output stream data from the Server
+        :param stream: Output audio stream to handle
         """
         self.stream_output.write(stream)
 
