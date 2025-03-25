@@ -48,7 +48,11 @@ class Server:
                 logger.info(f"New client connected: {address}")
 
             for client_address in self.clients:
-                self.send_stream_to_client(stream, client_address)
+                if (
+                    client_address == address
+                    and not self.config.get("exclude_sender")
+                ):
+                    self.send_stream_to_client(stream, client_address)
 
     def send_stream_to_client(self, stream, client_address: tuple[str, int]):
         """
