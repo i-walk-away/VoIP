@@ -49,8 +49,8 @@ class Server:
 
             for client_address in self.clients:
                 if (
-                    client_address == address
-                    and not self.config.get("exclude_sender")
+                    client_address != address
+                    # and not self.config.get("exclude_sender")
                 ):
                     self.send_stream_to_client(stream, client_address)
 

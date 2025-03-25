@@ -1,6 +1,6 @@
 {
     "ip": "127.0.0.1",
     "port": 9999,
-    "buffer_size": 512,
-    "exclude_sender": false
+    "buffer_size": 1024,
+    "exclude_sender": true
 }

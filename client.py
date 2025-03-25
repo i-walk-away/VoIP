@@ -16,7 +16,7 @@ class Client:
     FORMAT: int = paInt16
     CHANNELS: int = 1
     SAMPLING_RATE: int = 14410
-    FRAMES_PER_BUFFER: int = 256
+    FRAMES_PER_BUFFER: int = 512
 
     def __init__(self):
         self.config = ConfigService("config/client_config.json")
