@@ -15,10 +15,10 @@ class Server:
 
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.config = ConfigService('config/server_config.json')
+        self.config = ConfigService("config/server_config.json")
 
-        self.ip = self.config.get('IP')
-        self.port = self.config.get('PORT')
+        self.ip = self.config.get("ip")
+        self.port = self.config.get("port")
 
         self.socket.bind((self.ip, self.port))
 
@@ -26,7 +26,7 @@ class Server:
         """
         Initializes the Server on specified IP address and port
         """
-        logger.info(f'Server is running and ready to accept data at {self.ip}:{self.port}')
+        logger.info(f"Server is running and ready to accept data at {self.ip}:{self.port}")
         self._handle_clients()
 
     def _handle_clients(self) -> None:
@@ -36,16 +36,16 @@ class Server:
         """
         while True:
             try:
-                stream, address = self.socket.recvfrom(512)
+                stream, address = self.socket.recvfrom(self.config.get("buffer_size"))
             except Exception as e:
                 logger.error(
-                    f'Error occured while receiving stream from client: {e}'
+                    f"Error occured while receiving stream from client: {e}"
                 )
                 break
 
             if address not in self.clients:
                 self.clients.add(address)
-                logger.info(f'New client connected: {address}')
+                logger.info(f"New client connected: {address}")
 
             for client_address in self.clients:
                 self.send_stream_to_client(stream, client_address)
@@ -60,7 +60,7 @@ class Server:
         try:
             self.socket.sendto(stream, client_address)
         except Exception as e:
-            logger.info(f'Could not send stream to Client: {e}')
+            logger.info(f"Could not send stream to Client: {e}")
             self.remove_client(client_address)
 
     def remove_client(self, client_address: tuple[str, int]):
@@ -75,7 +75,6 @@ class Server:
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
-    #FIXME: TEMP
     server = Server()
     server.start_server()
 

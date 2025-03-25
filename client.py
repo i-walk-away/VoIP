@@ -19,7 +19,7 @@ class Client:
     FRAMES_PER_BUFFER: int = 256
 
     def __init__(self):
-        self.config = ConfigService('config/client_config.json')
+        self.config = ConfigService("config/client_config.json")
 
         # Audio interface, input and output stream initialization
         self.audio = PyAudio()
@@ -27,8 +27,8 @@ class Client:
         self.stream_output: Stream = self.get_output_stream()
 
         # Connection
-        self.ip: str = self.config.get('IP')
-        self.port: int = self.config.get('PORT')
+        self.ip: str = self.config.get("ip")
+        self.port: int = self.config.get("port")
         self.server_address: tuple[str, int] = (self.ip, self.port)
 
         try:
@@ -76,7 +76,7 @@ class Client:
         """
         while True:
             self._send_input_stream_to_server()
-            data, _ = self.socket.recvfrom(512)
+            data, _ = self.socket.recvfrom(self.config.get("buffer_size"))
 
             if data:
                 self._handle_stream_from_server(data)

@@ -22,18 +22,18 @@ class ConfigService:
         Loads config file
         """
         try:
-            with open(self.config_path, 'r', encoding="UTF-8") as cfg:
+            with open(self.config_path, "r", encoding="UTF-8") as cfg:
                 return json.load(cfg)
         except Exception as e:
-            logger.error(f'Failed to open a config file: {e}')
+            logger.error(f"Failed to open a config file: {e}")
             return None
 
     def _save_config(self):
         """
         Saves config file.
         """
-        with open(self.config_path, 'w', encoding='UTF-8') as cfg:
-            json.dump(self.config_data, cfg, indent=4)
+        with open(self.config_path, "w", encoding="UTF-8") as cfg:
+            json.dump(self.config_data, cfg, indent=4)  # noqa
 
     def set(self, key: str, value: Any) -> None:
         """
@@ -45,7 +45,7 @@ class ConfigService:
             self.config_data[key] = value
             self._save_config()
         except Exception as e:
-            logger.error(f'Failed to save changes to a config file: {e}')
+            logger.error(f"Failed to save changes to a config file: {e}")
 
     def get(self, key: str) -> Any:
         """
@@ -56,5 +56,5 @@ class ConfigService:
         if key in self.config_data:
             return self.config_data[key]
 
-        logger.error(f'Failed to get value of {key}: could not find {key} in cfg')
+        logger.error(f"Failed to get value of {key}: could not find {key} in cfg")
         return None
