@@ -2,72 +2,80 @@
 The Server is responsible for receiving and sending data to Clients
 """
 import socket
-import threading
 
 from src.utils.logger import logger
-
-# FIXME: Temp
-IP = input("IP ADDRESS: ")
-PORT = int(input("PORT: "))
+from src.services.config_service import ConfigService
 
 
 class Server:
     """
     Server class
     """
-    clients: list[socket.socket] = []
+    clients: set[tuple[str, int]] = set()
 
-    def __init__(self, ip: str, port: int):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((ip, port))
-        self.socket.listen(5)
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.config = ConfigService("config/server_config.json")
 
-        self.ip = ip
-        self.port = port
+        self.ip = self.config.get("ip")
+        self.port = self.config.get("port")
+
+        self.socket.bind((self.ip, self.port))
 
     def start_server(self) -> None:
         """
         Initializes the Server on specified IP address and port
         """
         logger.info(f"Server is running and ready to accept data at {self.ip}:{self.port}")
+        self._handle_clients()
 
-        while True:
-            client, _ = self.socket.accept()
-
-            self.clients.append(client)
-
-            thread = threading.Thread(
-                target=self._handle_client,
-                args=(client, )
-            )
-            thread.start()
-
-    def _handle_client(self, client: socket.socket) -> None:
+    def _handle_clients(self) -> None:
         """
         Handles data from Clients in a separate thread. Recieves input audio streams from Clients
         and sends them to other Clients
         """
         while True:
             try:
-                stream = client.recv(1024)
+                stream, address = self.socket.recvfrom(self.config.get("buffer_size"))
             except Exception as e:
                 logger.error(
-                    f"Error occured while receiving stream from client {client.getsockname()}: {e}"
+                    f"Error occured while receiving stream from client: {e}"
                 )
                 break
 
-            # This makes sure that the sender of an audio stream
-            # does not receive his own voice back from the server
-            for receiver in self.clients:
-                if receiver is not client:
-                    receiver.send(stream)
+            if address not in self.clients:
+                self.clients.add(address)
+                logger.info(f"New client connected: {address}")
 
-        self.clients.remove(client)
-        client.close()
+            for client_address in self.clients:
+                self.send_stream_to_client(stream, client_address)
+
+    def send_stream_to_client(self, stream, client_address: tuple[str, int]):
+        """
+        Tries to send audio stream data to Client.
+        If exception occures, removes Client from clients.
+        :param stream: stream
+        :param client_address: Client's IP and PORT
+        """
+        try:
+            self.socket.sendto(stream, client_address)
+        except Exception as e:
+            logger.info(f"Could not send stream to Client: {e}")
+            self.remove_client(client_address)
+
+    def remove_client(self, client_address: tuple[str, int]):
+        """
+        Use this method to remove a Client from clients.
+        :param client_address: Tuple containing Client's IP and PORT.
+        """
+        if client_address not in self.clients:
+            return
+        self.clients.remove(client_address)
+        logger.info(f"Disconnected client: {client_address}")
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
-    server = Server(IP, PORT)
+    server = Server()
     server.start_server()
 
 

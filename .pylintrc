@@ -554,7 +554,7 @@ spelling-store-unknown-words=no
 
 # This flag controls whether inconsistent-quotes generates a warning when the
 # character used as a quote delimiter is used inconsistently within a module.
-check-quote-consistency=no
+check-quote-consistency=yes
 
 # This flag controls whether the implicit-str-concat should generate a warning
 # on implicit string concatenation in sequences defined over several lines.
@@ -652,6 +652,7 @@ disable=
     C0115, # missing-class-docstring
     F0001, # no module named
     R0801, # duplicate-code
+    R0902, # too-many-instance-attributes
     R0903, # Too few public methods
     E0401, # import error
     E0611, # no-name-in-module
