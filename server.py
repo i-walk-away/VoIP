@@ -31,7 +31,7 @@ class Server:
 
     def _handle_clients(self) -> None:
         """
-        Handles data from Clients in a separate thread. Recieves input audio streams from Clients
+        Handles data from Client. Recieves input audio streams from Clients
         and sends them to other Clients
         """
         while True:

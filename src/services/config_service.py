@@ -50,7 +50,7 @@ class ConfigService:
     def get(self, key: str) -> Any:
         """
         Returns value of specified key. If an error occurs,
-        returns logger.error instead.
+        logger.error is provided and None returned instead.
         :param key: Specify key to get its value.
         """
         if key in self.config_data:
