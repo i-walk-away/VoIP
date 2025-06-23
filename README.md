@@ -6,7 +6,7 @@
 ## Шаги установки
 
 - Клонирование репозитория  
-  `git clone https://github.com/ar-russ/asterisko.git`
+  `git clone https://github.com/i-walk-away/asterisko.git`
 - Установка зависимостей  
 `pip install -r requirements.txt`
 
